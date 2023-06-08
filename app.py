@@ -17,8 +17,7 @@ def index():
 
 @app.route("/about")
 def about():
-    return "about"
-
-
-with app.test_request_context():
-    print(url_for('index'))
+    response = {
+        message = "this should be about the app"
+    }
+    return message
