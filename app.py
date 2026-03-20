@@ -1,4 +1,6 @@
 import os
+import time
+import random
 
 from flask import Flask
 from flask import url_for
@@ -15,9 +17,18 @@ def index():
     }
     return response
 
+@app.route("/v1/generate/")
+def generate():
+    wait = random.randint(0, 100) / 10
+    response = {
+        "wait-before-return": wait
+    }
+    time.sleep(wait)
+    return response
+
 @app.route("/about")
 def about():
     response = {
-        message = "this should be about the app"
+        "message": "this should be about the app"
     }
-    return message
+    return response
