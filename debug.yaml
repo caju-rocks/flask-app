@@ -1,0 +1,131 @@
+nameOverride: debug
+fullnameOverride: ""
+namespace: test
+
+deployment:
+  # Specifies whether a deployment should be created
+  enabled: true
+  replicaCount: 1
+  # Annotations to add to the deployment
+  annotations: {}
+  # Labels to add to the deployment
+  labels: {}
+  image:
+    repository: vcml10/debug
+    tag: latest
+    pullPolicy: Always
+  strategy:
+    type: ""
+    maxSurge: 1
+    maxUnavailable: 0
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  readiness: {}
+  liveness: {}
+
+# This section builds out the configmap
+configmap:
+  # Specifies whether a configmap should be created
+  enabled: false
+  # Annotations to add to the configmap
+  annotations: {}
+  # Labels to add to the configmap
+  labels: {}
+  env:
+    KEY: value
+    ANOTHER_KEY: another-value
+
+externalsecret:
+  enabled: false
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secret-store
+    kind: SecretStore
+  target:
+    creationPolicy: Owner
+  data:
+    - secretKeyRef: "SPRING_DATASOURCE_PASSWORD"
+      remoteRef:
+        key: /qa/example/password
+
+# This section builds out the service
+service:
+  # Specifies whether a service should be created
+  enabled: true
+  # Annotations to add to the service
+  annotations: {}
+  # Labels to add to the service
+  labels: {}
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
+      protocol: TCP
+    - name: metrics
+      port: 9090
+      targetPort: 9090
+
+ingress:
+  enabled: true
+  className: alb
+  annotations:
+    # alb.ingress.kubernetes.io/load-balancer-name: liverpool-qa-alb
+    alb.ingress.kubernetes.io/group.name: bluecharm
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/group.order: "20"
+    alb.ingress.kubernetes.io/healthcheck-path: /
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80},{"HTTPS":443}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/ssl-redirect: "443"
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:707791003225:certificate/188cf5ee-ec30-4a16-9fbc-8b5b726735cb
+  hosts:
+    - host: debug.dr.liverpool.bluecharm.cloud
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+
+# This section builds out the podDisruptionBudget
+pdb:
+  # Specifies whether a podDisruptionBudget should be created
+  enabled: false
+  # Annotations to add to the pdb
+  annotations: {}
+  # Labels to add to the pdb
+  labels: {}
+  minAvailable: 1
+
+hpa:
+  enabled: false
+  annotations: {}
+  labels: {}
+  maxReplicas: 3
+  minReplicas: 1
+  scaleUp:
+    stabilizationWindowSeconds: 30
+  scaleDown:
+    stabilizationWindowSeconds: 100
+  metrics:
+    target:
+      cpu:
+        averageUtilization: 70
+
+# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # Labels to add to the service account
+  labels: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""

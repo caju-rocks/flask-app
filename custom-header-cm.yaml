@@ -1,0 +1,7 @@
+apiVersion: v1
+data:
+  X-Bluecharm-LB: clb
+kind: ConfigMap
+metadata:
+  name: custom-headers-cm
+  namespace: test
